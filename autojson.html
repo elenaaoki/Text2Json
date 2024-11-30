@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auto Text to JSON</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f8f9fa;
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+      background: #ffffff;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+    h1 {
+      color: #007BFF;
+      text-align: center;
+    }
+    p {
+      margin-bottom: 10px;
+      font-size: 0.9em;
+      color: #555;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      resize: none;
+      font-size: 1em;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #007BFF;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+      margin-right: 10px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .output {
+      margin-top: 20px;
+      padding: 10px;
+      background: #f4f4f4;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    pre {
+      margin: 0;
+      font-family: Consolas, monospace;
+      background: #fff;
+      padding: 10px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    .button-group {
+      margin-top: 10px;
+      display: flex;
+      justify-content: flex-end;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Auto Text to JSON Generator</h1>
+    <p>Enter key-value pairs (e.g., `name: John`) separated by new lines:</p>
+    <textarea id="inputText" placeholder="Enter text here..."></textarea>
+    <button onclick="generateJSON()">Generate JSON</button>
+    <div class="output" id="output" hidden>
+      <h3>Generated JSON:</h3>
+      <pre id="jsonOutput"></pre>
+      <div class="button-group">
+        <button onclick="copyToClipboard()">Copy to Clipboard</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function generateJSON() {
+      const input = document.getElementById('inputText').value;
+      const lines = input.split('\n');
+      const jsonObject = {};
+
+      lines.forEach(line => {
+        const [key, value] = line.split(':').map(item => item.trim());
+        if (key && value) {
+          jsonObject[key] = value;
+        }
+      });
+
+      const output = document.getElementById('output');
+      const jsonOutput = document.getElementById('jsonOutput');
+      jsonOutput.textContent = JSON.stringify(jsonObject, null, 2);
+      output.hidden = false;
+    }
+
+    function copyToClipboard() {
+      const jsonOutput = document.getElementById('jsonOutput').textContent;
+      navigator.clipboard.writeText(jsonOutput).then(() => {
+        alert('JSON copied to clipboard!');
+      }).catch(err => {
+        console.error('Failed to copy: ', err);
+      });
+    }
+  </script>
+</body>
+</html>
