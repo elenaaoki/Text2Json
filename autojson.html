@@ -31,7 +31,7 @@
     textarea {
       width: 100%;
       height: 150px;
-      padding: 10px;
+      padding: 2px;
       border: 1px solid #ddd;
       border-radius: 5px;
       resize: none;
@@ -57,6 +57,9 @@
       border: 1px solid #ddd;
       border-radius: 5px;
       font-family: Consolas, monospace;
+      white-space: pre-wrap; /* Allow text to wrap */
+      word-wrap: break-word; /* Break long words to fit the width */
+      overflow-x: auto; /* Enable horizontal scroll if needed */
     }
   </style>
 </head>
@@ -83,9 +86,22 @@
       const jsonObject = {};
 
       lines.forEach(line => {
-        const [key, value] = line.split(':').map(item => item.trim());
-        if (key && value) {
-          jsonObject[key] = value;
+        // Trim the line and check if it contains a colon
+        line = line.trim();
+        if (line.includes(":")) {
+          const [key, value] = line.split(":").map(item => item.trim());
+          if (key && value) {
+            // If the key already exists, push to an array
+            if (jsonObject[key]) {
+              if (Array.isArray(jsonObject[key])) {
+                jsonObject[key].push(value);
+              } else {
+                jsonObject[key] = [jsonObject[key], value];
+              }
+            } else {
+              jsonObject[key] = value;
+            }
+          }
         }
       });
 
@@ -98,9 +114,15 @@
         const jsonObject = JSON.parse(input);
         let textOutput = '';
 
-        // Convert JSON back to text
+        // Convert JSON back to text (key: value)
         for (const [key, value] of Object.entries(jsonObject)) {
-          textOutput += `${key}: ${value}\n`;
+          if (Array.isArray(value)) {
+            value.forEach(v => {
+              textOutput += `${key}: ${v}\n`;
+            });
+          } else {
+            textOutput += `${key}: ${value}\n`;
+          }
         }
 
         displayOutput(textOutput);
