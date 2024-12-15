@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Text to JSON / JSON to Text</title>
+  <title>Text to JSON / JSON to Text Converter</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -57,9 +57,9 @@
       border: 1px solid #ddd;
       border-radius: 5px;
       font-family: Consolas, monospace;
-      white-space: pre-wrap; /* Allow text to wrap */
-      word-wrap: break-word; /* Break long words to fit the width */
-      overflow-x: auto; /* Enable horizontal scroll if needed */
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-x: auto;
     }
   </style>
 </head>
@@ -82,52 +82,52 @@
   <script>
     function convertTextToJSON() {
       const input = document.getElementById('inputText').value;
-      const lines = input.split('\n');
-      const jsonObject = {};
+      const lines = input.split('\n').map(line => line.trim()).filter(line => line);
+      const result = [];
+      let currentObject = {};
+      let keys = [];
 
-      lines.forEach(line => {
-        // Trim the line and check if it contains a colon
-        line = line.trim();
-        if (line.includes(":")) {
-          const [key, value] = line.split(":").map(item => item.trim());
+      lines.forEach((line, index) => {
+        if (line.includes(':')) {
+          const [key, value] = line.split(':').map(item => item.trim());
           if (key && value) {
-            // If the key already exists, push to an array
-            if (jsonObject[key]) {
-              if (Array.isArray(jsonObject[key])) {
-                jsonObject[key].push(value);
-              } else {
-                jsonObject[key] = [jsonObject[key], value];
-              }
-            } else {
-              jsonObject[key] = value;
+            if (keys.includes(key) && Object.keys(currentObject).length === keys.length) {
+              result.push(currentObject);
+              currentObject = {};
             }
+            if (!keys.includes(key)) {
+              keys.push(key);
+            }
+            currentObject[key] = isNaN(value) ? value : Number(value);
           }
+        }
+        
+        if (index === lines.length - 1 && Object.keys(currentObject).length > 0) {
+          result.push(currentObject);
         }
       });
 
-      displayOutput(JSON.stringify(jsonObject, null, 2));
+      displayOutput(JSON.stringify(result, null, 2));
     }
 
     function convertJSONToText() {
       const input = document.getElementById('inputText').value;
       try {
-        const jsonObject = JSON.parse(input);
+        const jsonArray = JSON.parse(input);
         let textOutput = '';
 
-        // Convert JSON back to text (key: value)
-        for (const [key, value] of Object.entries(jsonObject)) {
-          if (Array.isArray(value)) {
-            value.forEach(v => {
-              textOutput += `${key}: ${v}\n`;
-            });
-          } else {
+        jsonArray.forEach((obj, index) => {
+          for (const [key, value] of Object.entries(obj)) {
             textOutput += `${key}: ${value}\n`;
           }
-        }
+          if (index < jsonArray.length - 1) {
+            textOutput += '\n';
+          }
+        });
 
         displayOutput(textOutput);
       } catch (e) {
-        alert('Invalid JSON format');
+        alert('Format JSON tidak valid');
       }
     }
 
@@ -149,3 +149,4 @@
   </script>
 </body>
 </html>
+
