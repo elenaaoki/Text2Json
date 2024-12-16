@@ -84,28 +84,33 @@
       const input = document.getElementById('inputText').value;
       const lines = input.split('\n').map(line => line.trim()).filter(line => line);
       const result = [];
-      let currentObject = {};
+      let currentObject = null;
 
-      lines.forEach((line, index) => {
+      lines.forEach((line) => {
         if (line.includes(':')) {
           const [key, value] = line.split(':').map(item => item.trim());
           if (key && value) {
-            if (key === 'name' && Object.keys(currentObject).length > 0) {
-              result.push(currentObject);
+            if (key.toLowerCase() === 'nama' || key.toLowerCase() === 'name') {
+              if (currentObject) {
+                result.push(currentObject);
+              }
               currentObject = {};
             }
-            if (key === 'traits') {
-              currentObject[key] = value.split(',').map(trait => trait.trim());
+            if (currentObject === null) {
+              currentObject = {};
+            }
+            if (value.includes(',')) {
+              currentObject[key] = value.split(',').map(item => item.trim());
             } else {
-              currentObject[key] = value;
+              currentObject[key] = isNaN(value) ? value : Number(value);
             }
           }
         }
-        
-        if (index === lines.length - 1 && Object.keys(currentObject).length > 0) {
-          result.push(currentObject);
-        }
       });
+
+      if (currentObject) {
+        result.push(currentObject);
+      }
 
       displayOutput(JSON.stringify(result, null, 2));
     }
@@ -153,4 +158,3 @@
   </script>
 </body>
 </html>
-
