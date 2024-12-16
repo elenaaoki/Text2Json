@@ -85,20 +85,20 @@
       const lines = input.split('\n').map(line => line.trim()).filter(line => line);
       const result = [];
       let currentObject = {};
-      let keys = [];
 
       lines.forEach((line, index) => {
         if (line.includes(':')) {
           const [key, value] = line.split(':').map(item => item.trim());
           if (key && value) {
-            if (keys.includes(key) && Object.keys(currentObject).length === keys.length) {
+            if (key === 'name' && Object.keys(currentObject).length > 0) {
               result.push(currentObject);
               currentObject = {};
             }
-            if (!keys.includes(key)) {
-              keys.push(key);
+            if (key === 'traits') {
+              currentObject[key] = value.split(',').map(trait => trait.trim());
+            } else {
+              currentObject[key] = value;
             }
-            currentObject[key] = isNaN(value) ? value : Number(value);
           }
         }
         
@@ -118,7 +118,11 @@
 
         jsonArray.forEach((obj, index) => {
           for (const [key, value] of Object.entries(obj)) {
-            textOutput += `${key}: ${value}\n`;
+            if (Array.isArray(value)) {
+              textOutput += `${key}: ${value.join(', ')}\n`;
+            } else {
+              textOutput += `${key}: ${value}\n`;
+            }
           }
           if (index < jsonArray.length - 1) {
             textOutput += '\n';
