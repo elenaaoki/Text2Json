@@ -82,51 +82,48 @@
   <script>
     function convertTextToJSON() {
       const input = document.getElementById('inputText').value;
-      const entries = input.split(/\n(?=\w+:)/);
+      const lines = input.split('\n').map(line => line.trim()).filter(line => line);
       const result = [];
+      let currentObject = null;
+      let isInDescription = false;
+      let descriptionContent = '';
 
-      entries.forEach((entry) => {
-        const lines = entry.split('\n');
-        const obj = {};
-        let currentKey = '';
-        let isInDescription = false;
-        let descriptionContent = '';
-
-        lines.forEach((line) => {
-          if (line.includes(':') && !isInDescription) {
-            const [key, value] = line.split(':').map(item => item.trim());
-            if (key && value) {
-              currentKey = key;
+      lines.forEach((line) => {
+        if (line.includes(':') && !isInDescription) {
+          const [key, value] = line.split(':').map(item => item.trim());
+          if (key && value) {
+            if (key.toLowerCase() === 'nama') {
+              if (currentObject) {
+                result.push(currentObject);
+              }
+              currentObject = { [key]: value };
+            } else if (currentObject) {
               if (value.startsWith('@') && !value.endsWith('@')) {
                 isInDescription = true;
                 descriptionContent = value.slice(1) + '\n';
               } else if (value.startsWith('@') && value.endsWith('@')) {
-                obj[currentKey] = value.slice(1, -1);
+                currentObject[key] = value.slice(1, -1);
               } else if (value.includes(',')) {
-                obj[currentKey] = value.split(',').map(item => item.trim());
+                currentObject[key] = value.split(',').map(item => item.trim());
               } else {
-                obj[currentKey] = isNaN(value) ? value : Number(value);
+                currentObject[key] = isNaN(value) ? value : Number(value);
               }
             }
-          } else if (isInDescription) {
-            if (line.endsWith('@')) {
-              isInDescription = false;
-              descriptionContent += line.slice(0, -1);
-              obj[currentKey] = descriptionContent.trim();
-            } else {
-              descriptionContent += line + '\n';
-            }
           }
-        });
-
-        if (isInDescription) {
-          obj[currentKey] = descriptionContent.trim();
-        }
-
-        if (Object.keys(obj).length > 0) {
-          result.push(obj);
+        } else if (isInDescription) {
+          if (line.endsWith('@')) {
+            isInDescription = false;
+            descriptionContent += line.slice(0, -1);
+            currentObject[Object.keys(currentObject).pop()] = descriptionContent.trim();
+          } else {
+            descriptionContent += line + '\n';
+          }
         }
       });
+
+      if (currentObject) {
+        result.push(currentObject);
+      }
 
       displayOutput(JSON.stringify(result, null, 2));
     }
