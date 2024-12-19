@@ -84,7 +84,7 @@
       const input = document.getElementById('inputText').value;
       const lines = input.split('\n').map(line => line.trim()).filter(line => line);
       const result = [];
-      let currentObject = null;
+      let currentObject = {};
       let isInDescription = false;
       let descriptionContent = '';
 
@@ -92,22 +92,22 @@
         if (line.includes(':') && !isInDescription) {
           const [key, value] = line.split(':').map(item => item.trim());
           if (key && value) {
-            if (key.toLowerCase() === 'nama') {
-              if (currentObject) {
+            const lowerKey = key.toLowerCase();
+            if (lowerKey === 'nama' || lowerKey === 'name') {
+              if (Object.keys(currentObject).length > 0) {
                 result.push(currentObject);
+                currentObject = {};
               }
-              currentObject = { [key]: value };
-            } else if (currentObject) {
-              if (value.startsWith('@') && !value.endsWith('@')) {
-                isInDescription = true;
-                descriptionContent = value.slice(1) + '\n';
-              } else if (value.startsWith('@') && value.endsWith('@')) {
-                currentObject[key] = value.slice(1, -1);
-              } else if (value.includes(',')) {
-                currentObject[key] = value.split(',').map(item => item.trim());
-              } else {
-                currentObject[key] = isNaN(value) ? value : Number(value);
-              }
+            }
+            if (value.startsWith('@') && !value.endsWith('@')) {
+              isInDescription = true;
+              descriptionContent = value.slice(1) + '\n';
+            } else if (value.startsWith('@') && value.endsWith('@')) {
+              currentObject[key] = value.slice(1, -1);
+            } else if (value.includes(',')) {
+              currentObject[key] = value.split(',').map(item => item.trim());
+            } else {
+              currentObject[key] = isNaN(value) ? value : Number(value);
             }
           }
         } else if (isInDescription) {
@@ -121,7 +121,7 @@
         }
       });
 
-      if (currentObject) {
+      if (Object.keys(currentObject).length > 0) {
         result.push(currentObject);
       }
 
